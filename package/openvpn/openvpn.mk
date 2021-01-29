@@ -7,12 +7,11 @@
 OPENVPN_VERSION = 2.4.9
 OPENVPN_SOURCE = openvpn-$(OPENVPN_VERSION).tar.xz
 OPENVPN_SITE = http://swupdate.openvpn.net/community/releases
-OPENVPN_DEPENDENCIES = host-pkgconf openssl
+OPENVPN_DEPENDENCIES = host-pkgconf
 OPENVPN_LICENSE = GPL-2.0
 OPENVPN_LICENSE_FILES = COPYRIGHT.GPL
 OPENVPN_CONF_OPTS = \
 	--enable-iproute2 \
-	--with-crypto-library=openssl \
 	$(if $(BR2_STATIC_LIBS),--disable-plugins)
 OPENVPN_CONF_ENV = IFCONFIG=/sbin/ifconfig \
 	NETSTAT=/bin/netstat \
@@ -51,6 +50,14 @@ else
 OPENVPN_CONF_OPTS += --disable-plugin-auth-pam
 endif
 
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+OPENVPN_DEPENDENCIES += openssl
+OPENVPN_CONF_OPTS += --with-crypto-library=openssl
+else ifeq ($(BR2_PACKAGE_MBEDTLS),y)
+OPENVPN_DEPENDENCIES += mbedtls
+OPENVPN_CONF_OPTS += --with-crypto-library=mbedtls
+endif
+
 ifeq ($(BR2_PACKAGE_PKCS11_HELPER),y)
 OPENVPN_DEPENDENCIES += pkcs11-helper
 OPENVPN_CONF_OPTS += --enable-pkcs11
@@ -64,11 +71,6 @@ OPENVPN_CONF_OPTS += --enable-systemd
 else
 OPENVPN_CONF_OPTS += --disable-systemd
 endif
-
-define OPENVPN_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 755 $(@D)/src/openvpn/openvpn \
-		$(TARGET_DIR)/usr/sbin/openvpn
-endef
 
 define OPENVPN_INSTALL_INIT_SYSV
 	$(INSTALL) -m 755 -D package/openvpn/S60openvpn \

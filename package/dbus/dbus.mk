@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-DBUS_VERSION = 1.12.18
+DBUS_VERSION = 1.12.20
 DBUS_SITE = https://dbus.freedesktop.org/releases/dbus
 DBUS_LICENSE = AFL-2.1 or GPL-2.0+ (library, tools), GPL-2.0+ (tools)
 DBUS_LICENSE_FILES = COPYING
@@ -20,13 +20,14 @@ endef
 
 DBUS_DEPENDENCIES = host-pkgconf expat
 
+DBUS_SELINUX_MODULES = dbus
+
 DBUS_CONF_OPTS = \
 	--with-dbus-user=dbus \
 	--disable-tests \
 	--disable-asserts \
 	--disable-xml-docs \
 	--disable-doxygen-docs \
-	--with-xml=expat \
 	--with-system-socket=/run/dbus/system_bus_socket \
 	--with-system-pid-file=/run/messagebus.pid
 
@@ -108,8 +109,7 @@ HOST_DBUS_CONF_OPTS = \
 	--disable-xml-docs \
 	--disable-doxygen-docs \
 	--disable-systemd \
-	--without-x \
-	--with-xml=expat
+	--without-x
 
 # dbus for the host
 DBUS_HOST_INTROSPECT = $(HOST_DBUS_DIR)/introspect.xml

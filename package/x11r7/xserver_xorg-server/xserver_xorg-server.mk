@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-XSERVER_XORG_SERVER_VERSION = $(call qstrip,$(BR2_PACKAGE_XSERVER_XORG_SERVER_VERSION))
+XSERVER_XORG_SERVER_VERSION = 1.20.10
 XSERVER_XORG_SERVER_SOURCE = xorg-server-$(XSERVER_XORG_SERVER_VERSION).tar.bz2
 XSERVER_XORG_SERVER_SITE = https://xorg.freedesktop.org/archive/individual/xserver
 XSERVER_XORG_SERVER_LICENSE = MIT
@@ -20,6 +20,7 @@ XSERVER_XORG_SERVER_DEPENDENCIES = \
 	xlib_libXdmcp \
 	xlib_libXext \
 	xlib_libXfixes \
+	xlib_libXfont2 \
 	xlib_libXi \
 	xlib_libXrender \
 	xlib_libXres \
@@ -37,11 +38,6 @@ XSERVER_XORG_SERVER_DEPENDENCIES = \
 	pixman \
 	mcookie \
 	host-pkgconf
-
-ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_V_1_20),y)
-# 1.20.8/0007-fix-for-ZDI-11426.patch
-XSERVER_XORG_SERVER_IGNORE_CVES += CVE-2020-14347
-endif
 
 # We force -O2 regardless of the optimization level chosen by the
 # user, as the X.org server is known to trigger some compiler bugs at
@@ -132,12 +128,6 @@ else
 XSERVER_XORG_SERVER_CONF_OPTS += --disable-dri --disable-glx
 endif
 
-ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_AIGLX),y)
-XSERVER_XORG_SERVER_CONF_OPTS += --enable-aiglx
-else
-XSERVER_XORG_SERVER_CONF_OPTS += --disable-aiglx
-endif
-
 # Optional packages
 ifeq ($(BR2_PACKAGE_TSLIB),y)
 XSERVER_XORG_SERVER_DEPENDENCIES += tslib
@@ -169,14 +159,6 @@ XSERVER_XORG_SERVER_DEPENDENCIES += libunwind
 XSERVER_XORG_SERVER_CONF_OPTS += --enable-libunwind
 else
 XSERVER_XORG_SERVER_CONF_OPTS += --disable-libunwind
-endif
-
-ifeq ($(BR2_PACKAGE_XLIB_LIBXFONT2),y)
-XSERVER_XORG_SERVER_DEPENDENCIES += xlib_libXfont2
-endif
-
-ifeq ($(BR2_PACKAGE_XLIB_LIBXFONT),y)
-XSERVER_XORG_SERVER_DEPENDENCIES += xlib_libXfont
 endif
 
 ifneq ($(BR2_PACKAGE_XLIB_LIBXVMC),y)
@@ -228,6 +210,11 @@ else
 XSERVER_XORG_SERVER_CONF_OPTS += --with-sha1=libsha1
 XSERVER_XORG_SERVER_DEPENDENCIES += libsha1
 endif
+
+define XSERVER_XORG_SERVER_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 0644 package/x11r7/xserver_xorg-server/xorg.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/xorg.service
+endef
 
 define XSERVER_XORG_SERVER_INSTALL_INIT_SYSV
 	$(INSTALL) -D -m 755 package/x11r7/xserver_xorg-server/S40xorg \
